@@ -1,0 +1,11 @@
+window.VWL = window.VWL || {};
+VWL.formeln = VWL.formeln || [];
+VWL.formeln.push(
+  { id: 'f6-01', thema: 't6', name: 'Konsumentenrente (Definition)', formel: String.raw`KR = \text{Zahlungsbereitschaft} - \text{gezahlter Preis}`, erklaerung: 'Nutzen der Käufer aus der Marktteilnahme. John (ZB 1000) kauft zu 801: $KR = 199$. Grafisch: Fläche unter der Nachfragekurve, über dem Preis.' },
+  { id: 'f6-02', thema: 't6', name: 'Produzentenrente (Definition)', formel: String.raw`PR = \text{erhaltener Preis} - \text{Kosten}`, erklaerung: 'Nutzen der Verkäufer aus der Marktteilnahme. Paula (Kosten 500) erhält 599: $PR = 99$. Grafisch: Fläche über der Angebotskurve, unter dem Preis.' },
+  { id: 'f6-03', thema: 't6', name: 'Konsumentenrente bei linearer Nachfrage', formel: String.raw`KR = \tfrac12 \cdot Q \cdot (P_{max} - p)`, erklaerung: '$P_{max}$ = Prohibitivpreis (Achsenabschnitt der Nachfrage). Beispiel $Q_D = 100 - p$, $p = 60$: $KR = \\tfrac12 \\cdot 40 \\cdot 40 = 800$.' },
+  { id: 'f6-04', thema: 't6', name: 'Produzentenrente bei linearem Angebot', formel: String.raw`PR = \tfrac12 \cdot Q \cdot (p - P_{min})`, erklaerung: '$P_{min}$ = Preis, ab dem überhaupt angeboten wird (Achsenabschnitt des Angebots). Beispiel $Q_S = p - 20$, $p = 60$: $PR = \\tfrac12 \\cdot 40 \\cdot 40 = 800$.' },
+  { id: 'f6-05', thema: 't6', name: 'Gesamtrente und Effizienz', formel: String.raw`\text{Gesamtrente} = KR + PR \quad\text{maximal bei } Q^* \text{ mit } P_D(Q^*) = P_S(Q^*)`, erklaerung: 'Im Gleichgewicht ist die Zahlungsbereitschaft des Grenznachfragers gleich den Kosten des Grenzanbieters. Links davon erhöht jede Einheit die Rente, rechts senkt sie sie.' },
+  { id: 'f6-06', thema: 't6', name: 'Wohlfahrtsverlust (Dreieck)', formel: String.raw`WV = \tfrac12 \cdot (Q^* - Q') \cdot \big(P_D(Q') - P_S(Q')\big)`, erklaerung: 'Verlorene Rente, wenn statt $Q^*$ nur $Q\'$ gehandelt wird. Höhe = Abstand zwischen Nachfrage- und Angebotskurve bei $Q\'$. Umverteilung zwischen KR und PR ist kein Verlust.' },
+  { id: 'f6-07', thema: 't6', name: 'Änderung der KR bei Preissenkung', formel: String.raw`\Delta KR = \underbrace{Q_1 (P_1 - P_2)}_{\text{Bestandskäufer}} + \underbrace{\tfrac12 (Q_2 - Q_1)(P_1 - P_2)}_{\text{neue Käufer}}`, erklaerung: 'Rechteck für die bisherigen Käufer, Dreieck für die hinzukommenden. Analog für die PR bei Preiserhöhung.' }
+);
