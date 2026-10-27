@@ -8,7 +8,6 @@
   C.themen = C.themen || []; C.plan = C.plan || []; C.skripte = C.skripte || {}; C.lernziele = C.lernziele || {};
   C.formeln = C.formeln || []; C.karten = C.karten || []; C.aufgaben = C.aufgaben || []; C.quiz = C.quiz || [];
 
-  const INTERVAL = { 1: 1, 2: 3, 3: 7 };
   const app = document.getElementById('app');
 
   // ---------- Zustand ----------
@@ -55,17 +54,11 @@
     try { return katex.renderToString(x, { displayMode: !!display, throwOnError: false, strict: false }); } catch (e) { return esc(x); }
   }
 
-  // ---------- Leitner ----------
-  function cardState(id) { return S.leitner[id] || { box: 0, due: todayStr() }; }
-  function isDue(id) { return cardState(id).due <= todayStr(); }
+  // ---------- Karten-Bewertung ----------
+  function cardR(id) { return (S.leitner[id] || {}).r || 'offen'; }
   function rate(id, r) {
-    const st = cardState(id);
-    let box = st.box || 1;
-    if (r === 'ok') box = Math.min(3, (st.box || 0) + 1);
-    else if (r === 'unsicher') box = Math.max(1, st.box || 1);
-    else box = 1;
-    const due = r === 'ok' ? dstr(addDays(today(), INTERVAL[box])) : r === 'unsicher' ? dstr(addDays(today(), 1)) : todayStr();
-    S.leitner[id] = { box, due, last: todayStr(), n: (st.n || 0) + 1 };
+    const st = S.leitner[id] || {};
+    S.leitner[id] = { r, last: todayStr(), n: (st.n || 0) + 1 };
     save();
   }
   function readyThemen() { return C.themen.filter(t => t.status === 'ready'); }
@@ -98,15 +91,16 @@
     const aufgTeil = aufg.filter(a => (S.aufgaben[a.id] || {}).r === 'teil').length;
     const aufgNein = aufg.filter(a => (S.aufgaben[a.id] || {}).r === 'nein').length;
     const cards = [...C.formeln.filter(f => f.thema === tid), ...C.karten.filter(k => k.thema === tid)];
-    const box3 = cards.filter(c => cardState(c.id).box === 3).length;
+    const cardCount = r => cards.filter(c => cardR(c.id) === r).length;
+    const cardOk = cardCount('ok'), cardTeil = cardCount('unsicher'), cardNein = cardCount('nein');
     const qs = C.quiz.filter(q => q.thema === tid);
     let qr = 0, qf = 0; qs.forEach(q => { const s = S.quiz[q.id]; if (s) { qr += s.r; qf += s.f; } });
     const parts = [];
     if (lz.length) parts.push(lzDone / lz.length);
     if (aufg.length) parts.push((aufgOk + 0.5 * aufgTeil) / aufg.length);
-    if (cards.length) parts.push(box3 / cards.length);
+    if (cards.length) parts.push((cardOk + 0.5 * cardTeil) / cards.length);
     const total = parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
-    return { lz: lz.length, lzDone, aufg: aufg.length, aufgOk, aufgTeil, aufgNein, cards: cards.length, box3, qr, qf, total };
+    return { lz: lz.length, lzDone, aufg: aufg.length, aufgOk, aufgTeil, aufgNein, cards: cards.length, cardOk, cardTeil, cardNein, qr, qf, total };
   }
 
   // ---------- Ansicht: Heute ----------
@@ -133,15 +127,15 @@
   views.heute = function () {
     const days = Math.round((EXAM - today()) / 86400000);
     const ts = todayStr();
-    const dueF = C.formeln.filter(f => readyThemen().some(t => t.id === f.thema) && isDue(f.id)).length;
-    const dueK = C.karten.filter(k => readyThemen().some(t => t.id === k.thema) && isDue(k.id)).length;
+    const openF = C.formeln.filter(f => readyThemen().some(t => t.id === f.thema) && cardR(f.id) !== 'ok').length;
+    const openK = C.karten.filter(k => readyThemen().some(t => t.id === k.thema) && cardR(k.id) !== 'ok').length;
     const w = currentWeek();
 
     let html = `<h1>Heute</h1>
       <div class="grid">
         <div class="card"><div class="muted small">Tage bis zur Klausur</div><div class="countdown">${days}</div><div class="small muted">Fr, 27.11.2026 · 120 Minuten</div></div>
-        <div class="card"><div class="muted small">Fällige Wiederholung</div>
-          <p><a href="#drill"><strong>${dueF}</strong> Formeln</a> · <a href="#karten"><strong>${dueK}</strong> Begriffskarten</a></p>
+        <div class="card"><div class="muted small">Noch nicht gewusst</div>
+          <p><a href="#drill"><strong>${openF}</strong> Formeln</a> · <a href="#karten"><strong>${openK}</strong> Begriffskarten</a></p>
           <div class="small muted">Formeln müssen in der Klausur aus dem Kopf kommen – täglich 5–10 Minuten.</div></div>
       </div>`;
 
@@ -162,7 +156,7 @@
 
     html += `<h2>Ablauf einer 60-Minuten-Einheit</h2>
       <div class="card"><table style="width:100%;border-collapse:collapse">
-        <tr><td style="width:90px"><strong>0–5</strong></td><td>Formel-Drill: alle fälligen Karten</td></tr>
+        <tr><td style="width:90px"><strong>0–5</strong></td><td>Formel-Drill: alles, was noch nicht sitzt</td></tr>
         <tr><td><strong>5–20</strong></td><td>Skriptabschnitt lesen, die Grafik dazu einmal selbst zeichnen</td></tr>
         <tr><td><strong>20–50</strong></td><td>2–3 Aufgaben rechnen, erst danach Lösung aufklappen, ehrlich bewerten</td></tr>
         <tr><td><strong>50–60</strong></td><td>Ein Konzept des Tages im Tutor-Chat in eigenen Worten erklären, oder Quiz</td></tr>
@@ -176,7 +170,7 @@
         <div class="meta"><span class="badge ${t.prio === 'A' ? 'bad' : t.prio === 'B' ? 'warn' : 'grey'}">Prio ${t.prio}</span> <span class="muted small">${t.folien} Folien</span></div>
         <h3 style="margin:0.3rem 0">Thema ${t.nr}: ${esc(t.titel)}</h3>
         ${t.status === 'ready'
-          ? `<div class="progress ${pct >= 80 ? 'ok' : ''}"><div style="width:${pct}%"></div></div><div class="small muted">${pct} % · ${pr.aufgOk}/${pr.aufg} Aufgaben sicher · ${pr.box3}/${pr.cards} Karten im Langzeitfach</div>
+          ? `<div class="progress ${pct >= 80 ? 'ok' : ''}"><div style="width:${pct}%"></div></div><div class="small muted">${pct} % · ${pr.aufgOk}/${pr.aufg} Aufgaben sicher · ${pr.cardOk}/${pr.cards} Karten gewusst</div>
              <div class="btnrow"><a class="btn sm" href="#skripte/${t.id}">Skript</a><a class="btn sm" href="#aufgaben/${t.id}">Aufgaben</a><a class="btn sm" href="#quiz/${t.id}">Quiz</a></div>`
           : `<div class="small muted">Material folgt laut Plan (${esc(t.wann || 'bald')}).</div>`}
       </div>`;
@@ -212,7 +206,7 @@
     render(html);
   };
 
-  // ---------- Ansicht: Formel-Drill und Karten (Leitner) ----------
+  // ---------- Ansicht: Formel-Drill und Karten ----------
   function leitnerView(kind) {
     const items = kind === 'formel' ? C.formeln : C.karten;
     const title = kind === 'formel' ? 'Formel-Drill' : 'Begriffskarten';
@@ -221,38 +215,37 @@
     let tf = S.leitnerThema[kind] || 'alle';
     if (tf !== 'alle' && !ready.includes(tf)) tf = 'alle';
     const pool = tf === 'alle' ? allPool : allPool.filter(i => i.thema === tf);
+    V.status = V.status || 'alle';
     if (!V.queue) {
-      V.mode = V.mode || 'due';
-      V.queue = shuffle(pool.filter(i => V.mode === 'all' || isDue(i.id))).map(i => i.id);
+      V.queue = shuffle(pool.filter(i => V.status === 'alle' || cardR(i.id) === V.status)).map(i => i.id);
       V.done = 0; V.revealed = false;
     }
     const cur = pool.find(i => i.id === V.queue[0]);
-    const boxes = [0, 1, 2, 3].map(b => pool.filter(i => cardState(i.id).box === b).length);
+    const cnt = r => pool.filter(i => cardR(i.id) === r).length;
+    const opt = (v, label) => `<option value="${v}" ${V.status === v ? 'selected' : ''}>${label}</option>`;
 
     let html = `<h1>${title}</h1>
-      <p class="muted small">Fach 1 (neu/unsicher): täglich · Fach 2: alle 3 Tage · Fach 3 (sitzt): wöchentlich. Ehrliche Selbstbewertung ist der ganze Trick.</p>
+      <p class="muted small">Bewerte jede Karte ehrlich: gewusst, unsicher oder nicht gewusst. Nicht gewusste Karten kommen in dieser Runde noch einmal.</p>
       <div class="filterrow">
         <select data-action="leitner-thema" data-kind="${kind}"><option value="alle">Alle Themen</option>${readyThemen().map(t => `<option value="${t.id}" ${tf === t.id ? 'selected' : ''}>Thema ${t.nr}: ${esc(t.titel)}</option>`).join('')}</select>
-        <span class="badge grey">Neu: ${boxes[0]}</span><span class="badge bad">Fach 1: ${boxes[1]}</span><span class="badge warn">Fach 2: ${boxes[2]}</span><span class="badge ok">Fach 3: ${boxes[3]}</span>
-        <span style="flex:1"></span>
-        <button class="btn sm ${V.mode === 'due' ? 'primary' : ''}" data-action="leitner-mode" data-mode="due">Nur fällige</button>
-        <button class="btn sm ${V.mode === 'all' ? 'primary' : ''}" data-action="leitner-mode" data-mode="all">Alle durchgehen</button>
+        <select data-action="leitner-status">${opt('alle', 'Alle Stati')}${opt('offen', 'offen')}${opt('nein', 'nicht gewusst')}${opt('unsicher', 'unsicher')}${opt('ok', 'gewusst')}</select>
+        <span class="badge grey">Offen: ${cnt('offen')}</span><span class="badge bad">Nicht gewusst: ${cnt('nein')}</span><span class="badge warn">Unsicher: ${cnt('unsicher')}</span><span class="badge ok">Gewusst: ${cnt('ok')}</span>
       </div>`;
 
     if (!cur) {
-      html += `<div class="card"><h3>${V.done ? `Fertig – ${V.done} Karten bearbeitet.` : 'Nichts fällig.'}</h3>
-        <p class="muted">${V.mode === 'due' ? 'Alle fälligen Karten sind erledigt. Du kannst trotzdem alle Karten ohne Fälligkeit durchgehen.' : 'Alle Karten durchgegangen.'}</p>
-        <div class="btnrow"><button class="btn" data-action="leitner-mode" data-mode="all">Alle durchgehen</button><a class="btn" href="#heute">Zurück zu Heute</a></div></div>`;
+      html += `<div class="card"><h3>${V.done ? `Fertig – ${V.done} Karten bearbeitet.` : 'Keine Karten mit diesem Filter.'}</h3>
+        <p class="muted">${V.done ? 'Du kannst eine neue Runde starten oder den Filter ändern.' : 'Ändere den Themen- oder Status-Filter.'}</p>
+        <div class="btnrow"><button class="btn" data-action="leitner-restart">Neue Runde</button><a class="btn" href="#heute">Zurück zu Heute</a></div></div>`;
       render(html); return;
     }
-    const st = cardState(cur.id);
     const front = kind === 'formel'
       ? `<div class="side-label">Formel aufschreiben</div><div><strong>${esc(cur.name)}</strong></div>${cur.frage ? `<div class="muted small" style="margin-top:0.4rem">${md(cur.frage)}</div>` : ''}`
       : `<div class="side-label">Frage</div><div>${md(cur.vorne)}</div>`;
     const back = kind === 'formel'
       ? `${tex(cur.formel, true)}<div class="small">${md(cur.erklaerung || '')}</div>`
       : `<div>${md(cur.hinten)}</div>`;
-    html += `<div class="muted small">Noch ${V.queue.length} in dieser Runde · ${themaName(cur.thema)} · Fach ${st.box || 'neu'}</div>
+    const stLabel = { offen: 'offen', nein: 'nicht gewusst', unsicher: 'unsicher', ok: 'gewusst' }[cardR(cur.id)];
+    html += `<div class="muted small">Noch ${V.queue.length} in dieser Runde · ${themaName(cur.thema)} · ${stLabel}</div>
       <div class="flashcard" data-action="reveal">${front}${V.revealed ? `<div class="back">${back}</div>` : '<div class="muted small" style="margin-top:1rem">Klicken zum Aufdecken</div>'}</div>`;
     if (V.revealed) {
       html += `<div class="btnrow" style="justify-content:center">
@@ -369,7 +362,7 @@
         <table style="margin-top:0.6rem;font-size:0.92rem">
           <tr><td>Lernziele abgehakt</td><td><strong>${pr.lzDone}</strong> / ${pr.lz}</td></tr>
           <tr><td>Aufgaben</td><td><span class="badge ok">${pr.aufgOk} richtig</span> <span class="badge warn">${pr.aufgTeil} teilweise</span> <span class="badge bad">${pr.aufgNein} falsch</span> <span class="badge grey">${pr.aufg - pr.aufgOk - pr.aufgTeil - pr.aufgNein} offen</span></td></tr>
-          <tr><td>Karten im Langzeitfach</td><td><strong>${pr.box3}</strong> / ${pr.cards}</td></tr>
+          <tr><td>Karten</td><td><span class="badge ok">${pr.cardOk} gewusst</span> <span class="badge warn">${pr.cardTeil} unsicher</span> <span class="badge bad">${pr.cardNein} nicht gewusst</span> <span class="badge grey">${pr.cards - pr.cardOk - pr.cardTeil - pr.cardNein} offen</span></td></tr>
           <tr><td>Quiz</td><td>${pr.qr + pr.qf ? `${pr.qr} richtig, ${pr.qf} falsch (${Math.round(100 * pr.qr / (pr.qr + pr.qf))} %)` : 'noch nicht gespielt'}</td></tr>
         </table></div>`;
     }
@@ -390,11 +383,11 @@
     const lines = [`VWL-Mikro Lernstand vom ${todayStr()}`];
     for (const t of readyThemen()) {
       const pr = progress(t.id);
-      lines.push(`Thema ${t.nr} ${t.titel}: ${Math.round(pr.total * 100)} % | Lernziele ${pr.lzDone}/${pr.lz} | Aufgaben richtig ${pr.aufgOk}, teilweise ${pr.aufgTeil}, falsch ${pr.aufgNein} von ${pr.aufg} | Karten Langzeitfach ${pr.box3}/${pr.cards} | Quiz ${pr.qr}/${pr.qr + pr.qf}`);
+      lines.push(`Thema ${t.nr} ${t.titel}: ${Math.round(pr.total * 100)} % | Lernziele ${pr.lzDone}/${pr.lz} | Aufgaben richtig ${pr.aufgOk}, teilweise ${pr.aufgTeil}, falsch ${pr.aufgNein} von ${pr.aufg} | Karten gewusst ${pr.cardOk}, unsicher ${pr.cardTeil}, nicht gewusst ${pr.cardNein} von ${pr.cards} | Quiz ${pr.qr}/${pr.qr + pr.qf}`);
     }
     const weak = C.aufgaben.filter(a => ['nein', 'teil'].includes((S.aufgaben[a.id] || {}).r));
     if (weak.length) lines.push('Schwachstellen: ' + weak.map(a => `${a.id.toUpperCase()} (${S.aufgaben[a.id].r})`).join(', '));
-    const weakCards = [...C.formeln, ...C.karten].filter(c => cardState(c.id).box === 1 && cardState(c.id).n >= 2);
+    const weakCards = [...C.formeln, ...C.karten].filter(c => ['nein', 'unsicher'].includes(cardR(c.id)));
     if (weakCards.length) lines.push('Karten, die nicht sitzen: ' + weakCards.map(c => c.name || c.vorne.slice(0, 40)).join('; '));
     lines.push('', '--- Rohdaten (zum Import) ---', JSON.stringify(S));
     return lines.join('\n');
@@ -413,7 +406,7 @@
       if (el.dataset.r === 'nein') V.queue.push(id);
       V.revealed = false; route();
     }
-    else if (act === 'leitner-mode') { V.mode = el.dataset.mode; V.queue = null; route(); }
+    else if (act === 'leitner-restart') { V.queue = null; route(); }
     else if (act === 'rate-aufgabe') { S.aufgaben[el.dataset.id] = { r: el.dataset.r, ts: todayStr() }; save(); route(); }
     else if (act === 'quiz-answer') {
       const q = V.qs[V.i]; V.answered = +el.dataset.i;
@@ -442,6 +435,7 @@
     if (el.dataset.action === 'toggle-lz') { S.lernziele[el.dataset.id] = el.checked; save(); route(); }
     else if (el.dataset.action === 'toggle-ziel') { S.plan[el.dataset.id] = el.checked; save(); route(); }
     else if (el.dataset.action === 'filter') { V[el.dataset.key] = el.value; route(); }
+    else if (el.dataset.action === 'leitner-status') { V.status = el.value; V.queue = null; route(); }
     else if (el.dataset.action === 'leitner-thema') { S.leitnerThema[el.dataset.kind] = el.value; save(); V.queue = null; route(); }
     else if (el.dataset.action === 'quiz-thema') { V.tid = el.value; V.qs = null; route(); }
   });
