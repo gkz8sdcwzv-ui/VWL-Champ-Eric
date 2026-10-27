@@ -13,7 +13,7 @@
 
   // ---------- Zustand ----------
   function defaultState() {
-    return { leitner: {}, aufgaben: {}, quiz: {}, lernziele: {}, plan: {}, created: new Date().toISOString() };
+    return { leitner: {}, aufgaben: {}, quiz: {}, lernziele: {}, plan: {}, leitnerThema: {}, created: new Date().toISOString() };
   }
   let S = load();
   function load() {
@@ -217,7 +217,10 @@
     const items = kind === 'formel' ? C.formeln : C.karten;
     const title = kind === 'formel' ? 'Formel-Drill' : 'Begriffskarten';
     const ready = readyThemen().map(t => t.id);
-    const pool = items.filter(i => ready.includes(i.thema));
+    const allPool = items.filter(i => ready.includes(i.thema));
+    let tf = S.leitnerThema[kind] || 'alle';
+    if (tf !== 'alle' && !ready.includes(tf)) tf = 'alle';
+    const pool = tf === 'alle' ? allPool : allPool.filter(i => i.thema === tf);
     if (!V.queue) {
       V.mode = V.mode || 'due';
       V.queue = shuffle(pool.filter(i => V.mode === 'all' || isDue(i.id))).map(i => i.id);
@@ -229,6 +232,7 @@
     let html = `<h1>${title}</h1>
       <p class="muted small">Fach 1 (neu/unsicher): täglich · Fach 2: alle 3 Tage · Fach 3 (sitzt): wöchentlich. Ehrliche Selbstbewertung ist der ganze Trick.</p>
       <div class="filterrow">
+        <select data-action="leitner-thema" data-kind="${kind}"><option value="alle">Alle Themen</option>${readyThemen().map(t => `<option value="${t.id}" ${tf === t.id ? 'selected' : ''}>Thema ${t.nr}: ${esc(t.titel)}</option>`).join('')}</select>
         <span class="badge grey">Neu: ${boxes[0]}</span><span class="badge bad">Fach 1: ${boxes[1]}</span><span class="badge warn">Fach 2: ${boxes[2]}</span><span class="badge ok">Fach 3: ${boxes[3]}</span>
         <span style="flex:1"></span>
         <button class="btn sm ${V.mode === 'due' ? 'primary' : ''}" data-action="leitner-mode" data-mode="due">Nur fällige</button>
@@ -438,6 +442,7 @@
     if (el.dataset.action === 'toggle-lz') { S.lernziele[el.dataset.id] = el.checked; save(); route(); }
     else if (el.dataset.action === 'toggle-ziel') { S.plan[el.dataset.id] = el.checked; save(); route(); }
     else if (el.dataset.action === 'filter') { V[el.dataset.key] = el.value; route(); }
+    else if (el.dataset.action === 'leitner-thema') { S.leitnerThema[el.dataset.kind] = el.value; save(); V.queue = null; route(); }
     else if (el.dataset.action === 'quiz-thema') { V.tid = el.value; V.qs = null; route(); }
   });
 
