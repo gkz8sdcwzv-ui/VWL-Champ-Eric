@@ -157,8 +157,20 @@ p { margin: 0.5rem 0; }
 .termin.past { opacity: 0.7; }
 
 .filterrow { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0.6rem 0 1rem; }
-select, input[type=text], textarea { font: inherit; padding: 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 7px; background: var(--card); color: var(--text); }
+select, input[type=text], input[type=number], textarea { font: inherit; padding: 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 7px; background: var(--card); color: var(--text); }
 textarea { width: 100%; min-height: 100px; }
+
+/* Probeklausuren */
+.print-only { display: none; }
+.klausur-kopf { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.2rem; margin: 0.8rem 0; }
+.klausur-uebersicht { border-collapse: collapse; margin-top: 0.5rem; }
+.klausur-uebersicht th, .klausur-uebersicht td { border: 1px solid var(--line); padding: 0.2rem 0.6rem; text-align: center; }
+.klausur-uebersicht td:first-child { text-align: left; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.4rem; color: var(--accent); padding: 0.2rem 0.6rem; }
+.timer.warn { color: var(--warn); }
+.timer.over { color: var(--bad); font-size: 1.05rem; }
+.klausur-aufgabe .text p:first-child { margin-top: 0; }
+.klausur-aufgabe table { border-collapse: collapse; margin: 0.5rem 0; }
 
 .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: #eef0f3; padding: 0.05rem 0.35rem; border-radius: 4px; }
 
@@ -183,4 +195,12 @@ textarea { width: 100%; min-height: 100px; }
   .aufgabe summary { background: none; padding: 0.3rem 0; }
   a { color: inherit; }
   .graph .controls { display: none; }
+  .print-only { display: block; }
+  .klausur-kopf { border: none; padding: 0; border-bottom: 2px solid #000; padding-bottom: 0.6rem; margin-bottom: 1rem; }
+  .klausur-uebersicht th, .klausur-uebersicht td { border-color: #999; }
+  .klausur-aufgabe { page-break-inside: auto; border-bottom: none; padding: 0.6rem 0 1.4rem; }
+  .klausur-aufgabe .meta { font-size: 12pt; }
+  .klausur-aufgabe details[open] { margin-top: 0.6rem; border-top: 1px dashed #999; padding-top: 0.4rem; }
+  .klausur-aufgabe summary { font-size: 10pt; }
+  .badge { border: 1px solid #999; background: none; color: #000; }
 }
