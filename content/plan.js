@@ -44,8 +44,8 @@ VWL.plan = [
  },
  {
   woche: 3, von: '2026-11-09', bis: '2026-11-15',
-  thema: 'Arbeitsmarkt, Markteffizienz, Staat – und die erste Probeklausur',
-  meilenstein: 'Probeklausur 1 mit mindestens 60 % der Punkte.',
+  thema: 'Arbeitsmarkt, Markteffizienz, Staat',
+  meilenstein: 'Renten, Preiskontrollen und Steuerinzidenz grafisch und rechnerisch sicher.',
   ziele: [
    'Skript Thema 5 gelesen: Arbeitsangebot ist Haushaltstheorie, Arbeitsnachfrage ist Unternehmenstheorie',
    'Einkommens- und Substitutionseffekt einer Lohnerhöhung erklärt und gezeichnet (A → B → C)',
@@ -55,52 +55,50 @@ VWL.plan = [
    'Interaktive Grafiken zu Renten und Steuer ausprobiert: Was passiert mit dem roten Dreieck?',
    'Quiz Thema 5, 6, 8 gespielt',
    'Formeln aller bisherigen Themen einmal komplett durchgegangen (vor der Probeklausur)',
-   'Probeklausur 1 unter Realbedingungen geschrieben',
-   'Nachbereitung: jede Aufgabe mit Punktverlust noch einmal gerechnet, Fehlertypen notiert',
-   'Tutor-Chat: Fotos der Probeklausur schicken, Fehler besprechen'
+   'Tutor-Chat: Fotos der Übungsblätter 3 schicken, Fehler besprechen'
   ],
-  vorschlag: 'Montag/Dienstag Thema 5, Mittwoch Thema 6, Donnerstag/Freitag Thema 8, Samstag Probeklausur, Sonntag Nachbereitung. Die Probeklausur nicht verschieben – sie zeigt, wo du wirklich stehst.',
-  termine: [
-   { datum: '2026-11-14', titel: 'PROBEKLAUSUR 1', hinweis: 'Schwerpunkt Thema 1–6 und 8. Ruhiger Raum, Papier, Taschenrechner, keine Formelsammlung, 120 Minuten am Stück, Handy aus. Danach 15 Minuten Pause, erst dann Lösung ansehen.' }
-  ]
+  vorschlag: 'Montag/Dienstag Thema 5, Mittwoch Thema 6, Donnerstag/Freitag Thema 8. Die Probeklausur 1 ist wegen der anderen Prüfungen auf Samstag, 21.11. verschoben.',
+  termine: []
  },
  {
   woche: 4, von: '2026-11-16', bis: '2026-11-22',
-  thema: 'Marktversagen, Spieltheorie – und die zweite Probeklausur',
-  meilenstein: 'Probeklausur 2 mit mindestens 75 %; komplette Formelsammlung aus dem Gedächtnis.',
+  thema: 'Endspurt beginnt: Probeklausur 1 am Samstag, Marktversagen und Spieltheorie am Sonntag',
+  meilenstein: 'Probeklausur 1 mit mindestens 60 %; Thema 7 und 9 einmal komplett durchgearbeitet.',
   ziele: [
-   'Skript Thema 7.1 Monopol gelesen; Aufgaben **G1–G4**: Cournot-Punkt, Monopolpreis, Wohlfahrtsverlust gerechnet und gezeichnet',
+   '**Sa 21.11., Block 1 (2 h):** Probeklausur 1 unter Realbedingungen geschrieben – Timer in der App, Papier, Taschenrechner, Handy aus',
+   '**Sa 21.11., Block 2 (2 h):** Probeklausur 1 mit dem Punkteschema korrigiert, Punkte eingetragen; jede Aufgabe mit Punktverlust noch einmal gerechnet; Fehlertypen auf einem Blatt notiert',
+   '**Sa 21.11., zum Schluss:** Formel-Drill 15 Minuten, alles aus der Probeklausur, was nicht saß, als „nicht gewusst“ markiert',
+   '**So 22.11., Block 1 (2 h):** Skript Thema 7.1 Monopol gelesen; Aufgaben **G1–G4** und Übungsblatt 4 (**UB4-1, UB4-2**): Cournot-Punkt, Monopolpreis, Wohlfahrtsverlust gerechnet und gezeichnet',
+   '**So 22.11., Block 2 (2 h):** Skript Thema 7.2 externe Effekte und 7.3 öffentliche Güter gelesen; Aufgaben **G5–G8**: Pigou-Steuer, Coase, vertikale Aggregation',
+   '**So 22.11., Block 2:** Skript Thema 9 Spieltheorie gelesen; Aufgaben **S1–S4**: dominante Strategie, Nash-Gleichgewicht, Rückwärtsinduktion',
    'Monopol-Grafik dreimal aus dem Gedächtnis gezeichnet (Preis auf der Nachfrage, nicht im Schnittpunkt!)',
-   'Übungsblatt 4 (**UB4-1, UB4-2**) erst ohne Lösung gerechnet, dann verglichen',
-   'Skript Thema 7.2 externe Effekte gelesen; Aufgaben **G5–G7**: Pigou-Steuer berechnet, Coase angewendet',
-   'Skript Thema 7.3 öffentliche Güter und Thema 9 Spieltheorie gelesen; Aufgaben **G8** und **S1–S4**: Nash-Gleichgewicht und Rückwärtsinduktion',
    'Quiz Thema 7 und 9 gespielt',
-   'Komplette Formelsammlung aller Themen auf leere Blätter geschrieben (30 Minuten), mit der App verglichen, Lücken im Formel-Drill als „nicht gewusst“ markiert',
-   'Alle zwölf Standardgrafiken blind gezeichnet und beschriftet',
-   'Probeklausur 2 unter Realbedingungen geschrieben',
-   'Nachbereitung: Schwachstellenliste für die letzte Woche geschrieben (maximal fünf Punkte)',
-   'Tutor-Chat: Fehler besprechen, Schwachstellenliste abstimmen, Fortschritt exportieren'
+   'Tutor-Chat: Fotos der Probeklausur 1 schicken, Fehler besprechen, Fortschritt exportieren'
   ],
-  vorschlag: 'Montag/Dienstag Monopol und Übungsblatt 4, Mittwoch externe Effekte, Donnerstag öffentliche Güter und Spieltheorie, Freitag Formelsammlung und Grafiken, Samstag Probeklausur, Sonntag Nachbereitung.',
+  vorschlag: 'Ab jetzt rund 4 Stunden pro Tag in zwei Blöcken à 2 Stunden mit mindestens 30 Minuten Pause dazwischen – länger am Stück bringt nichts. Samstag gehört der Probeklausur 1 und ihrer Auswertung; die Auswertung ist wichtiger als die Klausur selbst. Sonntag ist der einzige Tag für neuen Stoff (Thema 7 und 9): zuerst Monopol, weil es am häufigsten geprüft wird, dann externe Effekte, zum Schluss Spieltheorie.',
   termine: [
-   { datum: '2026-11-21', titel: 'PROBEKLAUSUR 2', hinweis: 'Gesamter Stoff. Realbedingungen wie bei Probeklausur 1. Ziel: mindestens 75 % der Punkte.' }
+   { datum: '2026-11-21', titel: 'PROBEKLAUSUR 1', hinweis: 'Schwerpunkt Thema 2–6 und 8. Ruhiger Raum, Papier, Taschenrechner, keine Formelsammlung, 120 Minuten am Stück, Handy aus. Danach 15 Minuten Pause, erst dann Lösungen aufklappen und mit dem Punkteschema korrigieren.', link: '#klausuren/pk1' }
   ]
  },
  {
   woche: 5, von: '2026-11-23', bis: '2026-11-27',
-  thema: 'Letzte Woche: Schwachstellen, Probeklausur 3, Ruhe',
-  meilenstein: 'Klausurreife. Nichts Neues mehr.',
+  thema: 'Letzte Woche: Probeklausur 2 und 3, Schwachstellen, Ruhe',
+  meilenstein: 'Probeklausur 2 mit mindestens 70 %, Probeklausur 3 mit mindestens 75 %. Nichts Neues mehr.',
   ziele: [
-   'Schwachstellenliste abgearbeitet: je Punkt den Skriptabschnitt gelesen und zwei Aufgaben gerechnet',
-   'Formel-Drill: alles, was nicht „gewusst“ ist, bis es sitzt',
-   'Alle Standardgrafiken noch einmal blind gezeichnet',
-   'Tutor-Chat: „Prüfungssimulation gesamter Stoff“ (20 Minuten)',
-   'Probeklausur 3 geschrieben und nur noch kleine Lücken geschlossen',
-   'Tag vor der Klausur: maximal 45 Minuten Formel-Drill und Grafiken, Taschenrechner, Stifte, Studierendenausweis bereitgelegt, früh geschlafen'
+   '**Mo 23.11., Block 1:** Probeklausur 2 (gesamter Stoff) unter Realbedingungen geschrieben',
+   '**Mo 23.11., Block 2:** Probeklausur 2 korrigiert und Punkte eingetragen; Schwachstellenliste aus beiden Probeklausuren geschrieben (maximal fünf Punkte)',
+   '**Di 24.11., Block 1:** Schwachstellenliste abgearbeitet: je Punkt den Skriptabschnitt gelesen und zwei passende Aufgaben gerechnet',
+   '**Di 24.11., Block 2:** Komplette Formelsammlung aller Themen auf leere Blätter geschrieben (30 Minuten), mit der App verglichen; alle zwölf Standardgrafiken blind gezeichnet und beschriftet',
+   '**Mi 25.11., Block 1:** Probeklausur 3 (die schwerste) unter Realbedingungen geschrieben',
+   '**Mi 25.11., Block 2:** Probeklausur 3 korrigiert; nur noch die konkreten Lücken geschlossen, nichts Neues angefangen',
+   '**Do 26.11. (höchstens 2 h):** Formel-Drill: alles, was nicht „gewusst“ ist; Grafiken noch einmal blind; Tutor-Chat „Prüfungssimulation gesamter Stoff“ (20 Minuten)',
+   '**Do 26.11.:** Taschenrechner, Stifte, Studierendenausweis bereitgelegt, früh geschlafen',
+   'Tutor-Chat nach jeder Probeklausur: Fehler besprechen, Schwachstellenliste abstimmen, Fortschritt exportieren'
   ],
-  vorschlag: 'Montag/Dienstag Schwachstellen, Mittwoch Probeklausur 3, Donnerstag nur Wiederholung. In der Klausur: zuerst alle Aufgaben überfliegen, mit der sichersten beginnen, bei jeder Rechenaufgabe den Ansatz hinschreiben – Ansätze geben Punkte, auch ohne Endergebnis.',
+  vorschlag: 'Weiter 4 Stunden täglich in zwei Blöcken, Donnerstag bewusst kürzer. Jede Probeklausur mit Auswertung dauert etwa 3,5 Stunden – das ist der Tag. In der Klausur: zuerst alle Aufgaben überfliegen, mit der sichersten beginnen, bei jeder Rechenaufgabe den Ansatz hinschreiben – Ansätze geben Punkte, auch ohne Endergebnis. Preis des Monopolisten immer auf der Nachfragekurve ablesen.',
   termine: [
-   { datum: '2026-11-25', titel: 'PROBEKLAUSUR 3', hinweis: 'Gesamter Stoff, die schwerste der drei. Danach nur noch kleine Lücken schließen, nichts Neues anfangen.' },
+   { datum: '2026-11-23', titel: 'PROBEKLAUSUR 2', hinweis: 'Gesamter Stoff. Realbedingungen wie bei Probeklausur 1. Ziel: mindestens 70 % der Punkte.', link: '#klausuren/pk2' },
+   { datum: '2026-11-25', titel: 'PROBEKLAUSUR 3', hinweis: 'Gesamter Stoff, die schwerste der drei. Danach nur noch kleine Lücken schließen, nichts Neues anfangen.', link: '#klausuren/pk3' },
    { datum: '2026-11-27', titel: 'KLAUSUR', hinweis: '120 Minuten. Pro Punkt etwa eine Minute, Rest zum Prüfen. Ansatz immer hinschreiben.' }
   ]
  }
