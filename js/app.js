@@ -7,12 +7,13 @@
   const C = window.VWL = window.VWL || {};
   C.themen = C.themen || []; C.plan = C.plan || []; C.skripte = C.skripte || {}; C.lernziele = C.lernziele || {};
   C.formeln = C.formeln || []; C.karten = C.karten || []; C.aufgaben = C.aufgaben || []; C.quiz = C.quiz || [];
+  C.klausuren = C.klausuren || [];
 
   const app = document.getElementById('app');
 
   // ---------- Zustand ----------
   function defaultState() {
-    return { leitner: {}, aufgaben: {}, quiz: {}, lernziele: {}, plan: {}, leitnerThema: {}, created: new Date().toISOString() };
+    return { leitner: {}, aufgaben: {}, quiz: {}, lernziele: {}, plan: {}, leitnerThema: {}, klausuren: {}, created: new Date().toISOString() };
   }
   let S = load();
   function load() {
@@ -121,8 +122,25 @@
     const ts = todayStr();
     const list = (termine || []).filter(t => !onlyUpcoming || t.datum >= ts);
     if (!list.length) return '';
-    return list.map(t => `<div class="termin ${t.datum === ts ? 'today' : t.datum < ts ? 'past' : ''}"><strong>${fmtDate(t.datum)} · ${esc(t.titel)}</strong><div class="small muted">${esc(t.hinweis || '')}</div></div>`).join('');
+    return list.map(t => `<div class="termin ${t.datum === ts ? 'today' : t.datum < ts ? 'past' : ''}"><strong>${fmtDate(t.datum)} · ${esc(t.titel)}</strong><div class="small muted">${esc(t.hinweis || '')}</div>${t.link ? `<a class="btn sm" style="margin-top:0.4rem" href="${esc(t.link)}">Öffnen</a>` : ''}</div>`).join('');
   }
+
+  // ---------- Probeklausur-Hilfen ----------
+  function klausurState(kid) { return S.klausuren[kid] || (S.klausuren[kid] = { punkte: {} }); }
+  function klausurScore(k) {
+    const st = S.klausuren[k.id];
+    if (!st) return null;
+    const vals = k.aufgaben.map(a => st.punkte[a.nr]).filter(v => v !== undefined && v !== '');
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + Number(b), 0);
+  }
+  // Orientierung am üblichen DHBW-Schlüssel (50 % = 4,0, 95 % = 1,0); der echte kann abweichen.
+  function note(pct) {
+    const t = [[95, '1,0'], [90, '1,3'], [85, '1,7'], [80, '2,0'], [75, '2,3'], [70, '2,7'], [65, '3,0'], [60, '3,3'], [55, '3,7'], [50, '4,0']];
+    for (const [p, n] of t) if (pct >= p) return n;
+    return '5,0';
+  }
+  function fmtMs(ms) { const s = Math.max(0, Math.round(ms / 1000)); return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`; }
 
   views.heute = function () {
     const days = Math.round((EXAM - today()) / 86400000);
@@ -152,6 +170,15 @@
         ${upcoming.length ? `<div style="margin-top:0.8rem">${termineHtml(upcoming)}</div>` : ''}
         <div class="btnrow"><a class="btn" href="#plan">Ganzer Plan</a></div>
       </div>`;
+    }
+
+    if (C.klausuren.length) {
+      html += `<div class="card"><strong>Probeklausuren</strong><div class="small muted" style="margin-bottom:0.4rem">120 Minuten, 120 Punkte, Selbstkorrektur mit Punkteschema.</div><div class="btnrow">`;
+      for (const k of C.klausuren) {
+        const sc = klausurScore(k);
+        html += `<a class="btn sm ${sc !== null ? (sc / k.punkte >= 0.5 ? 'ok' : 'bad') : ''}" href="#klausuren/${k.id}">${esc(k.titel)} · ${fmtDate(k.datum)}${sc !== null ? ` · ${sc}/${k.punkte} P` : ''}</a>`;
+      }
+      html += `</div></div>`;
     }
 
     html += `<h2>Ablauf einer 60-Minuten-Einheit</h2>
@@ -331,10 +358,83 @@
     render(html);
   };
 
+  // ---------- Ansicht: Probeklausuren ----------
+  let klausurTimer = null;
+  views.klausuren = function (kid) {
+    clearInterval(klausurTimer);
+    const k = C.klausuren.find(k => k.id === kid);
+    if (!k) {
+      let html = `<h1>Probeklausuren</h1>
+        <p class="muted small">Drei Klausuren im Format der Modulprüfung: 120 Minuten, 120 Punkte, etwa eine Minute je Punkt. Schreibe sie unter Realbedingungen auf Papier – Timer starten, Lösungen erst nach der Abgabe aufklappen, dann mit dem Punkteschema ehrlich korrigieren. Zum Ausdrucken gibt es in jeder Klausur einen Druck-Button.</p><div class="grid">`;
+      for (const k of C.klausuren) {
+        const st = S.klausuren[k.id], sc = klausurScore(k);
+        const pct = sc !== null ? Math.round(100 * sc / k.punkte) : null;
+        html += `<div class="card"><div class="muted small">${fmtDate(k.datum)} · ${k.dauer} Min · ${k.punkte} P</div>
+          <h3 style="margin:0.2rem 0 0.3rem">${esc(k.titel)}</h3><div class="small">${esc(k.schwerpunkt)}</div>
+          ${pct !== null ? `<div class="progress ${pct >= 50 ? 'ok' : ''}"><div style="width:${pct}%"></div></div><div class="small"><strong>${sc} / ${k.punkte} P</strong> · ${pct} % · Note ca. ${note(pct)}</div>` : `<div class="small muted">${st && st.start ? 'begonnen' : 'noch nicht geschrieben'}</div>`}
+          <div class="btnrow"><a class="btn primary sm" href="#klausuren/${k.id}">Öffnen</a></div></div>`;
+      }
+      render(html + '</div>');
+      return;
+    }
+
+    const st = klausurState(k.id);
+    const sc = klausurScore(k);
+    const pct = sc !== null ? Math.round(100 * sc / k.punkte) : null;
+    const running = st.start && !st.ende;
+    const bewertet = k.aufgaben.filter(a => st.punkte[a.nr] !== undefined && st.punkte[a.nr] !== '').length;
+
+    let timerHtml;
+    if (!st.start) timerHtml = `<button class="btn primary" data-action="klausur-start" data-kid="${k.id}">Timer starten (${k.dauer} Min)</button><span class="small muted">Erst Papier, Stift und Taschenrechner bereitlegen, dann starten.</span>`;
+    else if (running) timerHtml = `<span class="timer" id="timer">--:--</span><button class="btn" data-action="klausur-ende" data-kid="${k.id}">Abgeben</button><span class="small muted">Lösungen erst nach der Abgabe aufklappen.</span>`;
+    else timerHtml = `<span class="small">Abgegeben nach <strong>${Math.round((st.ende - st.start) / 60000)} Minuten</strong>.</span><button class="btn sm" data-action="klausur-reset" data-kid="${k.id}">Zurücksetzen und neu schreiben</button>`;
+
+    let html = `<div class="btnrow no-print"><a class="btn sm" href="#klausuren">← Alle Probeklausuren</a>
+        <button class="btn sm" data-action="print-klausur" data-mode="aufgaben">Aufgabenblatt drucken</button>
+        <button class="btn sm" data-action="print-klausur" data-mode="loesungen">Mit Lösungen drucken</button></div>
+      <div class="klausur">
+      <div class="klausur-kopf">
+        <h1 style="margin-bottom:0.2rem">${esc(k.titel)} · VWL Mikro</h1>
+        <div class="muted small">Modul W3BW_501 Grundlagen der VWL und Mikroökonomik · Bearbeitungszeit ${k.dauer} Minuten · ${k.punkte} Punkte · Schwerpunkt: ${esc(k.schwerpunkt)}</div>
+        <div class="print-only small" style="margin-top:0.6rem">Name: ______________________________ &nbsp;&nbsp; Datum: ______________ &nbsp;&nbsp; Erreichte Punkte: ______ / ${k.punkte}</div>
+        <p class="small"><strong>Hinweise:</strong> ${esc(k.hinweis)}</p>
+        <table class="small klausur-uebersicht"><tr><th>Aufgabe</th>${k.aufgaben.map(a => `<th>${a.nr}</th>`).join('')}<th>Σ</th></tr>
+          <tr><td>Punkte</td>${k.aufgaben.map(a => `<td>${a.punkte}</td>`).join('')}<td>${k.punkte}</td></tr>
+          <tr class="no-print"><td>Erreicht</td>${k.aufgaben.map(a => `<td>${st.punkte[a.nr] !== undefined && st.punkte[a.nr] !== '' ? st.punkte[a.nr] : '–'}</td>`).join('')}<td>${sc !== null ? sc : '–'}</td></tr></table>
+      </div>
+      <div class="card accent no-print"><div class="btnrow" style="align-items:center;margin:0">${timerHtml}</div>
+        ${sc !== null ? `<div style="margin-top:0.6rem"><div class="progress ${pct >= 50 ? 'ok' : ''}"><div style="width:${pct}%"></div></div><div class="small"><strong>${sc} von ${k.punkte} Punkten (${pct} %)</strong> · Note ca. ${note(pct)} · ${bewertet} von ${k.aufgaben.length} Aufgaben bewertet<span class="muted"> · Notenschlüssel nur zur Orientierung</span></div></div>` : ''}
+      </div>`;
+
+    for (const a of k.aufgaben) {
+      const v = st.punkte[a.nr];
+      html += `<div class="aufgabe klausur-aufgabe">
+        <div class="meta"><strong>Aufgabe ${a.nr}</strong> · ${esc(a.titel)} <span class="badge grey">${a.punkte} Punkte</span> ${(a.themen || []).map(t => `<span class="badge no-print">${themaName(t)}</span>`).join(' ')}</div>
+        <div class="text">${md(a.aufgabe)}</div>
+        <details class="loesung"><summary>Lösung und Punkteschema</summary><div>${md(a.loesung)}</div></details>
+        <div class="bewertung"><label class="small">Erreichte Punkte: <input type="number" min="0" max="${a.punkte}" step="0.5" value="${v !== undefined ? v : ''}" data-action="klausur-punkte" data-kid="${k.id}" data-nr="${a.nr}" style="width:5rem;margin-left:0.3rem"> / ${a.punkte}</label>
+          ${(a.themen || []).length ? `<a class="small" href="#skripte/${a.themen[0]}">Skript nachlesen</a><a class="small" href="#aufgaben/${a.themen[0]}">Ähnliche Aufgaben üben</a>` : ''}</div>
+      </div>`;
+    }
+    html += `</div>`;
+    render(html);
+
+    if (running) {
+      const tick = () => {
+        const el = document.getElementById('timer'); if (!el) { clearInterval(klausurTimer); return; }
+        const rest = st.start + k.dauer * 60000 - Date.now();
+        el.textContent = rest >= 0 ? fmtMs(rest) : `Zeit abgelaufen (+${fmtMs(-rest)})`;
+        el.classList.toggle('over', rest < 0);
+        el.classList.toggle('warn', rest >= 0 && rest < 10 * 60000);
+      };
+      tick(); klausurTimer = setInterval(tick, 1000);
+    }
+  };
+
   // ---------- Ansicht: Plan ----------
   views.plan = function () {
     const ts = todayStr();
-    let html = `<h1>Lernplan bis zur Klausur</h1><p class="muted small">Pro Woche eine Liste von Zielen – du entscheidest selbst, was du wann machst. Richtwert: rund 1 Stunde an Werktagen, 2 Stunden am Wochenende. Nur die Probeklausuren und die Klausur haben feste Termine.</p>`;
+    let html = `<h1>Lernplan bis zur Klausur</h1><p class="muted small">Pro Woche eine Liste von Zielen – du entscheidest selbst, was du wann machst. Richtwert bis zum 20.11.: rund 1 Stunde an Werktagen, 2 Stunden am Wochenende. Endspurt ab dem 21.11.: etwa 4 Stunden täglich in zwei Blöcken à 2 Stunden mit Pause dazwischen. Nur die Probeklausuren und die Klausur haben feste Termine.</p>`;
     for (const w of C.plan) {
       const cls = w.von <= ts && ts <= w.bis ? 'current' : w.bis < ts ? 'past' : '';
       const done = weekDone(w), pct = Math.round(100 * done / w.ziele.length);
@@ -389,6 +489,10 @@
     if (weak.length) lines.push('Schwachstellen: ' + weak.map(a => `${a.id.toUpperCase()} (${S.aufgaben[a.id].r})`).join(', '));
     const weakCards = [...C.formeln, ...C.karten].filter(c => ['nein', 'unsicher'].includes(cardR(c.id)));
     if (weakCards.length) lines.push('Karten, die nicht sitzen: ' + weakCards.map(c => c.name || c.vorne.slice(0, 40)).join('; '));
+    for (const k of C.klausuren) {
+      const sc = klausurScore(k);
+      if (sc !== null) lines.push(`${k.titel}: ${sc}/${k.punkte} P (${Math.round(100 * sc / k.punkte)} %) | je Aufgabe: ${k.aufgaben.map(a => `A${a.nr} ${S.klausuren[k.id].punkte[a.nr] ?? '–'}/${a.punkte}`).join(', ')}`);
+    }
     lines.push('', '--- Rohdaten (zum Import) ---', JSON.stringify(S));
     return lines.join('\n');
   }
@@ -399,6 +503,15 @@
     if (!el) return;
     const act = el.dataset.action;
     if (act === 'print') { window.print(); }
+    else if (act === 'print-klausur') {
+      app.querySelectorAll('details.loesung').forEach(d => { d.open = el.dataset.mode === 'loesungen'; });
+      window.print();
+    }
+    else if (act === 'klausur-start') { const st = klausurState(el.dataset.kid); st.start = Date.now(); st.ende = null; save(); route(); }
+    else if (act === 'klausur-ende') { const st = klausurState(el.dataset.kid); st.ende = Date.now(); save(); route(); }
+    else if (act === 'klausur-reset') {
+      if (confirm('Timer und Punkte dieser Probeklausur löschen?')) { S.klausuren[el.dataset.kid] = { punkte: {} }; save(); route(); }
+    }
     else if (act === 'reveal') { V.revealed = true; route(); }
     else if (act === 'rate') {
       rate(el.dataset.id, el.dataset.r);
@@ -438,6 +551,18 @@
     else if (el.dataset.action === 'leitner-status') { V.status = el.value; V.queue = null; route(); }
     else if (el.dataset.action === 'leitner-thema') { S.leitnerThema[el.dataset.kind] = el.value; save(); V.queue = null; route(); }
     else if (el.dataset.action === 'quiz-thema') { V.tid = el.value; V.qs = null; route(); }
+    else if (el.dataset.action === 'klausur-punkte') {
+      const st = klausurState(el.dataset.kid), max = Number(el.max);
+      let v = el.value === '' ? '' : Math.min(max, Math.max(0, Number(el.value)));
+      if (v === '') delete st.punkte[el.dataset.nr]; else st.punkte[el.dataset.nr] = v;
+      save();
+      // Kein route(): offene Lösungen und Scrollposition bleiben erhalten
+      const k = C.klausuren.find(k => k.id === el.dataset.kid), sc = klausurScore(k);
+      app.querySelectorAll('.klausur-uebersicht td').forEach(() => {});
+      el.value = v;
+      const cell = app.querySelector(`.klausur-uebersicht tr.no-print`);
+      if (cell) cell.innerHTML = `<td>Erreicht</td>${k.aufgaben.map(a => `<td>${st.punkte[a.nr] !== undefined ? st.punkte[a.nr] : '–'}</td>`).join('')}<td>${sc !== null ? sc : '–'}</td>`;
+    }
   });
 
   route();
